@@ -17,11 +17,11 @@ fi
 
 
 #Insert data by service
-echo "$CURL_DATA" | awk -F, '{ STATUS="3" ; switch($18) { case "UP":STATUS="0"; break; case "DOWN": case "DOWN 1/2": STATUS="2"; break; default: STATUS="2"; break}; print "{\"source\":\""$1"\",\"name\":\""$2"\",\"output\":\""$18"\",\"status\":"STATUS"}"}' | xargs -r -0 -I R -d"\n"   curl -s -i -X POST -H 'Content-Type: application/json' -d "R" http://$CHECK_SENSU_URI/results
+echo "$CURL_DATA" | awk -F, '{ {STATUS="3";STATUS_STR="UNKNOWN";}  switch($18) { case "UP":case "OPEN":{STATUS="0";STATUS_STR="OK";} break; case "DOWN": case "DOWN 1/2":{ STATUS="2"; STATUS_STR="ERROR";} break; default: {STATUS="2";STATUS_STR="ERROR";} break}; print "{\"source\":\""$1"\",\"name\":\""$2"\",\"output\":\""STATUS_STR" : "$18"\",\"status\":"STATUS"}"}' | xargs -r -0 -I R -d"\n"   curl -s -i -X POST -H 'Content-Type: application/json' -d "R" http://$CHECK_SENSU_URI/results > /dev/null
 SERVICE_RESULT=`echo $?`
 
 #Insert data by Node
-echo "$CURL_DATA" | awk -F, '{ STATUS="3" ; switch($18) { case "UP":STATUS="0"; break; case "DOWN": case "DOWN 1/2": STATUS="2"; break; default: STATUS="2"; break}; print "{\"source\":\""$2"\",\"name\":\""$1"\",\"output\":\""$18"\",\"status\":"STATUS"}"}' | xargs -r -0 -I R -d"\n"   curl -s -i -X POST -H 'Content-Type: application/json' -d "R" http://$CHECK_SENSU_URI/results
+echo "$CURL_DATA" | awk -F, '{ {STATUS="3";STATUS_STR="UNKNOWN";}  switch($18) { case "UP":case "OPEN":{STATUS="0";STATUS_STR="OK";} break; case "DOWN": case "DOWN 1/2":{ STATUS="2"; STATUS_STR="ERROR";} break; default: {STATUS="2";STATUS_STR="ERROR";} break}; print "{\"source\":\""$2"\",\"name\":\""$1"\",\"output\":\""STATUS_STR" : "$18"\",\"status\":"STATUS"}"}' | xargs -r -0 -I R -d"\n"   curl -s -i -X POST -H 'Content-Type: application/json' -d "R" http://$CHECK_SENSU_URI/results > /dev/null
 NODE_RESULT=`echo $?`
 
 #Review the result of inserting data into sensu
@@ -43,4 +43,5 @@ fi
 
 echo "$OUT"
 exit $RESULT
+
 
